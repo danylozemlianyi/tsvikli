@@ -13,7 +13,8 @@ const props = defineProps({
 })
 
 function connect() {
-  window.location.href = `http://localhost:8080/guacamole/#/client/${props.id}?token=${props.token}`
+  const baseUrl = window.location.origin;
+  window.location.href = `${baseUrl}/guacamole/#/client/${props.id}?token=${props.token}`;
 }
 </script>
 
