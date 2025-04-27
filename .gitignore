@@ -66,3 +66,14 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# Lambda modules
+terraform/resources/db_init/PyMySQL-1.1.1.dist-info/
+terraform/resources/db_init/pymysql
+terraform/resources/db_update/PyMySQL-1.1.1.dist-info/
+terraform/resources/db_update/pymysql
+terraform/resources/db_update/_yaml
+terraform/resources/db_update/PyYAML-6.0.2.dist-info
+terraform/resources/db_update/yaml
+terraform/database/lambda_package.zip
+terraform/database/db_update_lambda_package.zip

@@ -1,0 +1,29 @@
+users:
+  - username: alice
+    password: password123
+    connections:
+      - server-1
+      - server-2
+
+  - username: bob
+    password: mysecurepassword
+    connections:
+      - server-2
+
+machines:
+  - id: server-1
+    protocol: ssh
+    hostname: 192.168.1.10
+    port: 22
+    username: ubuntu
+    private_key: |
+      -----BEGIN RSA PRIVATE KEY-----
+      MIIEpAIBAAKCAQEAs...your-private-key...IDAQABAoIBAQCP...
+      -----END RSA PRIVATE KEY-----
+
+  - id: server-2
+    protocol: rdp
+    hostname: 192.168.1.20
+    port: 3389
+    username: Administrator
+    password: AdminPassword123

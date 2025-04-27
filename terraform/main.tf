@@ -10,3 +10,15 @@ module "frontend" {
     aws.us_east_1 = aws.us_east_1
   }
 }
+
+module "network" {
+  source = "./network"
+}
+
+module "database" {
+  source = "./database"
+
+  vpc_id               = module.network.vpc_id
+  private_subnets      = module.network.private_subnets
+  private_subnet_cidrs = module.network.private_subnet_cidrs
+}

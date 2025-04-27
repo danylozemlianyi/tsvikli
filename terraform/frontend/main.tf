@@ -170,3 +170,12 @@ resource "aws_s3_object" "frontend_files" {
   )
 }
 
+resource "null_resource" "invalidate_cloudfront_cache" {
+  triggers = {
+    content_version = filemd5("${local.dist_dir}/index.html")
+  }
+
+  provisioner "local-exec" {
+    command = "aws cloudfront create-invalidation --distribution-id ${aws_cloudfront_distribution.frontend.id} --paths '/*'"
+  }
+}
