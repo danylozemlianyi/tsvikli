@@ -8,13 +8,27 @@
 <script setup>
 const props = defineProps({
   conn: Object,
-  id: String,
-  token: String
+  id: String
 })
 
 function connect() {
   const baseUrl = window.location.origin;
-  window.location.href = `${baseUrl}/guacamole/#/client/${props.id}?token=${props.token}`;
+  const token = sessionStorage.getItem("guac_token");
+
+  const url = `${baseUrl}/guacamole/#/client?GUAC_ID=${props.id}&GUAC_TYPE=c&GUAC_DATA_SOURCE=mysql&token=${token}`;
+
+  const width = window.screen.availWidth;
+  const height = window.screen.availHeight;
+
+  const newWindow = window.open(
+    url,
+    "_blank",
+    `toolbar=no,menubar=no,scrollbars=no,resizable=yes,location=no,status=no,width=${width},height=${height},top=0,left=0`
+  );
+
+  if (!newWindow) {
+    alert("Будь ласка, дозвольте спливаючі вікна для сайту.");
+  }
 }
 </script>
 

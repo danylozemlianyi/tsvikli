@@ -12,7 +12,6 @@
         :key="id"
         :conn="conn"
         :id="id"
-        :token="token"
       />
     </div>
   </div>
@@ -20,16 +19,19 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import { useAuthStore } from '../stores/auth'
 import ConnectionCard from '../components/ConnectionCard.vue'
 
-const store = useAuthStore()
-const token = store.token
+const token = ref(null)
 const connections = ref({})
 
 onMounted(async () => {
+  token.value = sessionStorage.getItem("guac_token")
+  if (!token.value) {
+    window.location.href = "/login"
+    return
+  }
   try {
-    const res = await fetch(`/guacamole/api/session/data/default/connections?token=${token}`)
+    const res = await fetch(`/guacamole/api/session/data/mysql/connections?token=${token.value}`)
     const data = await res.json()
 
     if (data && typeof data === 'object' && !data.message) {

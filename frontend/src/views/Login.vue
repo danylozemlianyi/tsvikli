@@ -25,6 +25,7 @@ const router = useRouter()
 async function handleLogin() {
   try {
     await store.login(username.value, password.value)
+    sessionStorage.setItem("guac_token", store.token)
     router.push('/dashboard')
   } catch (err) {
     error.value = err.message

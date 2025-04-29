@@ -87,11 +87,17 @@ resource "aws_db_instance" "tsvikli_db" {
   }
 }
 
-data "archive_file" "lambda_zip" {
+data "archive_file" "init_lambda_zip" {
   type        = "zip"
   source_dir  = "${path.module}/../resources/db_init/"
   output_path = "${path.module}/lambda_package.zip"
   excludes    = []
+}
+
+data "archive_file" "db_update_lambda_zip" {
+  type        = "zip"
+  source_dir  = "${path.module}/../resources/db_update/"
+  output_path = "${path.module}/db_update_lambda_package.zip"
 }
 
 resource "aws_iam_role" "lambda_role" {
@@ -141,18 +147,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
           "ec2:DeleteNetworkInterface"
         ],
         Resource = "*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy" "lambda_s3_access" {
-  name = "tsvikli-lambda-s3-access"
-  role = aws_iam_role.lambda_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
+      },
       {
         Effect = "Allow",
         Action = [
@@ -175,8 +170,8 @@ resource "aws_lambda_function" "db_initializer" {
   handler       = "lambda.lambda_handler"
   runtime       = "python3.11"
 
-  filename         = data.archive_file.lambda_zip.output_path
-  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  filename         = data.archive_file.init_lambda_zip.output_path
+  source_code_hash = data.archive_file.init_lambda_zip.output_base64sha256
 
   role = aws_iam_role.lambda_role.arn
 
@@ -202,47 +197,6 @@ resource "aws_lambda_invocation" "db_init" {
     aws_db_instance.tsvikli_db,
     aws_lambda_function.db_initializer
   ]
-}
-
-resource "random_id" "suffix" {
-  byte_length = 4
-}
-
-resource "aws_s3_bucket" "config_bucket" {
-  bucket        = "tsvikli-config-${random_id.suffix.hex}"
-  force_destroy = true
-
-  tags = {
-    Project = "Tsvikli Config"
-  }
-}
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "config_bucket_encryption" {
-  bucket = aws_s3_bucket.config_bucket.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-resource "aws_s3_object" "config_file" {
-  bucket = aws_s3_bucket.config_bucket.id
-  key    = "config.yaml"
-  source = "${path.module}/../../config.yaml"
-  etag   = filemd5("${path.module}/../../config.yaml")
-
-  depends_on = [
-    aws_s3_bucket.config_bucket,
-    aws_s3_bucket_notification.config_bucket_notification
-  ]
-}
-
-data "archive_file" "db_update_lambda_zip" {
-  type        = "zip"
-  source_dir  = "${path.module}/../resources/db_update/"
-  output_path = "${path.module}/db_update_lambda_package.zip"
 }
 
 resource "aws_lambda_function" "config_updater" {
@@ -287,5 +241,40 @@ resource "aws_s3_bucket_notification" "config_bucket_notification" {
 
   depends_on = [
     aws_lambda_permission.allow_s3_invoke
+  ]
+}
+
+resource "random_id" "suffix" {
+  byte_length = 4
+}
+
+resource "aws_s3_bucket" "config_bucket" {
+  bucket        = "tsvikli-config-${random_id.suffix.hex}"
+  force_destroy = true
+
+  tags = {
+    Project = "Tsvikli Config"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "config_bucket_encryption" {
+  bucket = aws_s3_bucket.config_bucket.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_object" "config_file" {
+  bucket = aws_s3_bucket.config_bucket.id
+  key    = "config.yaml"
+  source = "${path.module}/../../config.yaml"
+  etag   = filemd5("${path.module}/../../config.yaml")
+
+  depends_on = [
+    aws_s3_bucket.config_bucket,
+    aws_s3_bucket_notification.config_bucket_notification
   ]
 }

@@ -12,13 +12,13 @@ def get_db_credentials(secret_name):
     return yaml.safe_load(secret_response["SecretString"])
 
 
-def hash_password(password, salt):
-    salted_password = salt + password
-    return hashlib.sha256(salted_password.encode("utf-8")).hexdigest()
-
-
 def generate_salt():
-    return os.urandom(32).hex()
+    return os.urandom(32)
+
+
+def hash_password(password, salt):
+    combined = password.encode("utf-8") + salt.hex().upper().encode("utf-8")
+    return hashlib.sha256(combined).hexdigest().upper()
 
 
 def connect_db(credentials):
@@ -63,12 +63,13 @@ def create_user(cursor, username, password):
 
     salt = generate_salt()
     password_hash = hash_password(password, salt)
+
     cursor.execute(
         """
         INSERT INTO guacamole_user (entity_id, password_hash, password_salt, password_date, disabled)
         VALUES (%s, %s, %s, NOW(), 0)
         """,
-        (entity_id, password_hash, salt),
+        (entity_id, bytes.fromhex(password_hash), salt),
     )
 
     return entity_id
@@ -116,7 +117,12 @@ def grant_connection_permission(cursor, user_entity_id, connection_id):
 
 
 def grant_system_permission(cursor, user_entity_id):
-    permissions = ["CREATE_CONNECTION", "CREATE_CONNECTION_GROUP", "CREATE_USER", "ADMINISTER"]
+    permissions = [
+        "CREATE_CONNECTION",
+        "CREATE_CONNECTION_GROUP",
+        "CREATE_USER",
+        "ADMINISTER",
+    ]
     for permission in permissions:
         cursor.execute(
             """
@@ -156,7 +162,9 @@ def lambda_handler(event, context):
             for user in config["users"]:
                 for machine_id in user.get("connections", []):
                     grant_connection_permission(
-                        cursor, user_entity_ids[user["username"]], connection_ids[machine_id]
+                        cursor,
+                        user_entity_ids[user["username"]],
+                        connection_ids[machine_id],
                     )
 
     finally:
