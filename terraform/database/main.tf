@@ -5,8 +5,9 @@ resource "random_password" "db_password" {
 }
 
 resource "aws_secretsmanager_secret" "db_credentials" {
-  name        = "tsvikli-db-credentials"
-  description = "Credentials for Tsvikli MySQL database"
+  name                    = "tsvikli-db-credentials-secret"
+  description             = "Credentials for Tsvikli MySQL database"
+  recovery_window_in_days = 0
 }
 
 resource "aws_secretsmanager_secret_version" "db_credentials_version" {
@@ -79,7 +80,7 @@ resource "aws_db_instance" "tsvikli_db" {
 
   backup_retention_period   = 7
   deletion_protection       = false
-  skip_final_snapshot       = false
+  skip_final_snapshot       = true
   final_snapshot_identifier = "tsvikli-db-final-snapshot"
 
   tags = {
@@ -187,6 +188,8 @@ resource "aws_lambda_function" "db_initializer" {
       DB_SECRET_NAME = aws_secretsmanager_secret.db_credentials.name
     }
   }
+
+  depends_on = [aws_secretsmanager_secret_version.db_credentials_version, aws_db_instance.tsvikli_db]
 }
 
 resource "aws_lambda_invocation" "db_init" {
@@ -220,6 +223,10 @@ resource "aws_lambda_function" "config_updater" {
       CONFIG_KEY     = "config.yaml"
     }
   }
+  depends_on = [
+    aws_secretsmanager_secret_version.db_credentials_version,
+    aws_db_instance.tsvikli_db,
+  ]
 }
 
 resource "aws_lambda_permission" "allow_s3_invoke" {

@@ -18,6 +18,11 @@ variable "db_secret_arn" {
   type        = string
 }
 
+variable "db_secret_version" {
+  description = "The version of the AWS Secrets Manager secret storing the database connection credentials."
+  type        = string
+}
+
 variable "domain_name" {
   description = "The custom domain name that will be used for accessing the Guacamole backend through the ALB."
   type        = string

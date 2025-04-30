@@ -20,7 +20,7 @@ output "nat_gateway_id" {
 
 output "private_subnet_cidrs" {
   description = "CIDR blocks of private subnets"
-  value       = [
+  value = [
     aws_subnet.private_a.cidr_block,
     aws_subnet.private_b.cidr_block
   ]

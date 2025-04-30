@@ -1,5 +1,7 @@
 data "aws_secretsmanager_secret_version" "db_creds" {
   secret_id = var.db_secret_arn
+
+  depends_on = [var.db_secret_version]
 }
 
 resource "aws_cloudwatch_log_group" "guacamole_logs" {
@@ -8,7 +10,7 @@ resource "aws_cloudwatch_log_group" "guacamole_logs" {
 }
 
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name               = "tsvikli-ecs-task-execution-role"
+  name = "tsvikli-ecs-task-execution-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
@@ -27,7 +29,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_policy" {
 }
 
 resource "aws_iam_role" "ecs_task_role" {
-  name               = "tsvikli-ecs-task-role"
+  name = "tsvikli-ecs-task-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
@@ -43,11 +45,11 @@ resource "aws_iam_role" "ecs_task_role" {
 resource "aws_iam_policy" "secret_manager_access" {
   name        = "SecretManagerAccessPolicy"
   description = "Policy to access Secrets Manager"
-  policy      = jsonencode({
+  policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect = "Allow",
-      Action = ["secretsmanager:GetSecretValue"],
+      Effect   = "Allow",
+      Action   = ["secretsmanager:GetSecretValue"],
       Resource = var.db_secret_arn
     }]
   })
@@ -76,10 +78,10 @@ resource "aws_security_group" "ecs_sg" {
   }
 
   ingress {
-    from_port   = 4822
-    to_port     = 4822
-    protocol    = "tcp"
-    self        = true 
+    from_port = 4822
+    to_port   = 4822
+    protocol  = "tcp"
+    self      = true
   }
 
   egress {
@@ -117,7 +119,7 @@ resource "aws_ecs_task_definition" "guacamole_task" {
         { name = "GUACD_HOSTNAME", value = "localhost" },
         { name = "MYSQL_HOSTNAME", value = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["host"] },
         { name = "MYSQL_DATABASE", value = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["dbname"] },
-        { name = "MYSQL_USER",     value = "guacamole_user" },
+        { name = "MYSQL_USER", value = "guacamole_user" },
         { name = "MYSQL_PASSWORD", value = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["password"] }
       ]
       logConfiguration = {
@@ -192,7 +194,7 @@ resource "aws_appautoscaling_policy" "guacamole_cpu_scaling_policy" {
     }
     target_value       = 70.0
     scale_in_cooldown  = 300
-    scale_out_cooldown = 60
+    scale_out_cooldown = 20
   }
 }
 
