@@ -31,7 +31,6 @@ module "backend" {
   private_subnets   = module.network.private_subnets
   public_subnets    = module.network.public_subnets
   db_secret_arn     = module.database.db_secret_arn
-  db_secret_version = module.database.db_secret_version
   domain_name       = var.domain_name
   dns_zone_id       = var.dns_zone_id
   region            = var.region

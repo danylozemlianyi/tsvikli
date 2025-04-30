@@ -8,6 +8,8 @@ resource "aws_secretsmanager_secret" "db_credentials" {
   name                    = "tsvikli-db-credentials-secret"
   description             = "Credentials for Tsvikli MySQL database"
   recovery_window_in_days = 0
+
+  depends_on = [aws_db_instance.tsvikli_db]
 }
 
 resource "aws_secretsmanager_secret_version" "db_credentials_version" {
@@ -171,8 +173,9 @@ resource "aws_lambda_function" "db_initializer" {
   handler       = "lambda.lambda_handler"
   runtime       = "python3.11"
 
-  filename         = data.archive_file.init_lambda_zip.output_path
-  source_code_hash = data.archive_file.init_lambda_zip.output_base64sha256
+  filename                           = data.archive_file.init_lambda_zip.output_path
+  source_code_hash                   = data.archive_file.init_lambda_zip.output_base64sha256
+  replace_security_groups_on_destroy = true
 
   role = aws_iam_role.lambda_role.arn
 
@@ -203,13 +206,14 @@ resource "aws_lambda_invocation" "db_init" {
 }
 
 resource "aws_lambda_function" "config_updater" {
-  function_name    = "tsvikli-config-updater"
-  handler          = "lambda.lambda_handler"
-  runtime          = "python3.11"
-  filename         = data.archive_file.db_update_lambda_zip.output_path
-  source_code_hash = data.archive_file.db_update_lambda_zip.output_base64sha256
-  role             = aws_iam_role.lambda_role.arn
-  timeout          = 120
+  function_name                      = "tsvikli-config-updater"
+  handler                            = "lambda.lambda_handler"
+  runtime                            = "python3.11"
+  filename                           = data.archive_file.db_update_lambda_zip.output_path
+  source_code_hash                   = data.archive_file.db_update_lambda_zip.output_base64sha256
+  role                               = aws_iam_role.lambda_role.arn
+  timeout                            = 120
+  replace_security_groups_on_destroy = true
 
   vpc_config {
     subnet_ids         = var.private_subnets

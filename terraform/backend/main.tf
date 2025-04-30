@@ -1,7 +1,5 @@
 data "aws_secretsmanager_secret_version" "db_creds" {
   secret_id = var.db_secret_arn
-
-  depends_on = [var.db_secret_version]
 }
 
 resource "aws_cloudwatch_log_group" "guacamole_logs" {
@@ -155,7 +153,7 @@ resource "aws_ecs_service" "guacamole_service" {
   name            = "tsvikli-guacamole-service"
   cluster         = aws_ecs_cluster.tsvikli_cluster.id
   task_definition = aws_ecs_task_definition.guacamole_task.arn
-  desired_count   = 1
+  desired_count   = 2
   launch_type     = "FARGATE"
 
   network_configuration {
@@ -279,6 +277,12 @@ resource "aws_lb_target_group" "guacamole_tg" {
     unhealthy_threshold = 3
     healthy_threshold   = 2
     matcher             = "200-399"
+  }
+
+  stickiness {
+    enabled         = true
+    type            = "lb_cookie"
+    cookie_duration = 3600
   }
 }
 
