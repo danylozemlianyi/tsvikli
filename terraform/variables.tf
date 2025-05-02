@@ -19,5 +19,4 @@ variable "domain_name" {
 variable "dns_zone_id" {
   description = "DNS Zone ID created for domain"
   type        = string
-  default     = "<dns_zone_id>"
 }
