@@ -26,12 +26,12 @@ module "database" {
 }
 
 module "backend" {
-  source            = "./backend"
-  vpc_id            = module.network.vpc_id
-  private_subnets   = module.network.private_subnets
-  public_subnets    = module.network.public_subnets
-  db_secret_arn     = module.database.db_secret_arn
-  domain_name       = var.domain_name
-  dns_zone_id       = var.dns_zone_id
-  region            = var.region
+  source          = "./backend"
+  vpc_id          = module.network.vpc_id
+  private_subnets = module.network.private_subnets
+  public_subnets  = module.network.public_subnets
+  db_secret_arn   = module.database.db_secret_arn
+  domain_name     = var.domain_name
+  dns_zone_id     = var.dns_zone_id
+  region          = var.region
 }

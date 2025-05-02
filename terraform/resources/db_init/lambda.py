@@ -49,21 +49,27 @@ def lambda_handler(event, context):
                 sql_lines.append(stripped_line)
 
             sql_content = " ".join(sql_lines)
-            statements = [stmt.strip() for stmt in sql_content.split(";") if stmt.strip()]
+            statements = [
+                stmt.strip() for stmt in sql_content.split(";") if stmt.strip()
+            ]
 
             for statement in statements:
                 try:
                     cursor.execute(statement)
                 except pymysql.MySQLError as e:
                     raise (e)
-            
+
             try:
-                cursor.execute(f"""
+                cursor.execute(
+                    f"""
                     CREATE USER IF NOT EXISTS 'guacamole_user'@'%' IDENTIFIED BY '{db_password}';
-                """)
-                cursor.execute(f"""
+                """
+                )
+                cursor.execute(
+                    f"""
                     GRANT SELECT, INSERT, UPDATE, DELETE ON {db_name}.* TO 'guacamole_user'@'%';
-                """)
+                """
+                )
                 cursor.execute("FLUSH PRIVILEGES;")
             except pymysql.MySQLError as e:
                 raise (e)

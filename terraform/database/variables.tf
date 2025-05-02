@@ -14,7 +14,7 @@ variable "private_subnet_cidrs" {
 }
 
 variable "db_username" {
-  description = "Master username for the database"
+  description = "Admin username for the database"
   type        = string
   default     = "tsvikliadmin"
 }
