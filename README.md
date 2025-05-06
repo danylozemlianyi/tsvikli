@@ -22,7 +22,7 @@ Cloud-Based Remote Desktop SaaS tool
 
 #### Config file
 
-Connections and users can be specified in [config.yaml](config.yaml). Follow templates from the file.
+Connections and users can be specified in `config.yaml` file in root of the project. Follow [example](example.config.yaml) to create your own file.
 
 ### Deployment
 

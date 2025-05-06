@@ -38,7 +38,7 @@ resource "aws_ecs_task_definition" "guacamole_task" {
     },
     {
       name      = "guacd"
-      image     = "guacamole/guacd:1.5.5"
+      image     = "guacamole/guacd:1.5.5"  # Configuration is not necessary, thus original image is used
       essential = true
       portMappings = [{
         containerPort = 4822

@@ -6,7 +6,7 @@ resource "aws_db_instance" "tsvikli_db" {
   identifier             = "tsvikli-db"
   allocated_storage      = 20
   max_allocated_storage  = 100
-  storage_type           = "gp2"
+  storage_type           = "gp3"
   engine                 = "mysql"
   engine_version         = "8.0.35"
   instance_class         = "db.t3.micro"

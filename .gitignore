@@ -36,6 +36,9 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+# Config file
+config.yaml
+
 # Logs
 logs
 *.log
